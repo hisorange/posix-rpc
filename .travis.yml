@@ -1,0 +1,31 @@
+sudo: required
+dist: trusty
+group: edge
+language: php
+
+php:
+  - 7.1
+  - 7.2
+  - 7.3
+  - 7.4
+  - nightly
+
+matrix:
+  allow_failures:
+    - php: nightly
+  fast_finish: true
+
+before_script:
+  - composer self-update >/dev/null 2>&1
+  - composer install --prefer-source --no-interaction
+
+script: ./vendor/bin/kahlan --clover=clover.xml
+
+after_success:
+  - travis_retry php ./vendor/bin/coveralls -v -x ./coveralls.json
+  - "if [ $(phpenv version-name) = '7.1' ]; then curl -F 'json_file=@coveralls.json' https://coveralls.io/api/v1/jobs --verbose; fi"
+
+notifications:
+  email:
+    - hello@hisorange.me
+# Thanks for this awesome service @TravisCI!
